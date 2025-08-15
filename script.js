@@ -3,8 +3,24 @@ let liked = [];
 let currentIndex = 0;
 
 async function init() {
-	cats = await getCats(10);
-	renderCard();
+	const loader = document.getElementById('loader');
+	const stack = document.getElementById('card-stack');
+
+	loader.classList.remove('hidden');
+	stack.classList.add('hidden');
+
+	const firstCatUrl = await fetchCat();
+
+	const img = new Image();
+	img.src = firstCatUrl;
+	img.onload = () => {
+		cats.push(firstCatUrl);
+		loader.classList.add('hidden');
+		stack.classList.remove('hidden');
+		renderCard();
+  	};
+
+  	fetchRemainingCats(9);
 }
 
 function renderCard() {
@@ -18,8 +34,23 @@ function renderCard() {
 
 	const card = document.createElement('div');
 	card.className = 'card';
-	card.style.backgroundImage = `url(${cats[currentIndex]})`;
 
+	const loader = document.createElement('div');
+	loader.className = 'card-loader';
+	card.appendChild(loader);
+	stack.appendChild(card);
+
+	const img = new Image();
+	img.src = cats[currentIndex];
+	img.onload = () => {
+		loader.remove();
+		card.style.backgroundImage = `url(${cats[currentIndex]})`;
+		card.style.opacity = '1';
+		attachSwipeHandlers(card);
+	};
+}
+
+function attachSwipeHandlers(card) {
 	let startX = 0;
 	let currentX = 0;
 	let dragging = false;
@@ -44,7 +75,6 @@ function renderCard() {
 		card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
 
 		if (deltaX > 100) {
-			// Like
 			liked.push(cats[currentIndex]);
 			card.style.transform = 'translateX(400px) rotate(20deg)';
 			card.style.opacity = '0';
@@ -54,31 +84,25 @@ function renderCard() {
 			}, 300);
 		}
 		else if (deltaX < -100) {
-			// Dislike
 			card.style.transform = 'translateX(-400px) rotate(-20deg)';
 			card.style.opacity = '0';
 			setTimeout(() => {
 				currentIndex++;
 				renderCard();
-		}, 300);
+			}, 300);
 		}
 		else {
-			// Snap back
 			card.style.transform = 'translateX(0) rotate(0)';
 		}
   	}
 
-	// Touch events
 	card.addEventListener('touchstart', onStart);
 	card.addEventListener('touchmove', onMove);
 	card.addEventListener('touchend', onEnd);
 
-	// Mouse events
 	card.addEventListener('mousedown', onStart);
 	document.addEventListener('mousemove', onMove);
 	document.addEventListener('mouseup', onEnd);
-
-	stack.appendChild(card);
 }
 
 function showSummary() {
@@ -94,18 +118,20 @@ function showSummary() {
 	});
 }
 
-async function getCats(count = 10) {
-	const cats = [];
-	for (let i = 0; i < count; i++) {
-		const res = await fetch('https://cataas.com/cat?json=true');
-		const data = await res.json();
-		let url = data.url;
-		if (!url.startsWith('http')) {
-			url = `https://cataas.com${url}`;
-		}
-		cats.push(url);
+async function fetchCat() {
+	const res = await fetch('https://cataas.com/cat?json=true');
+	const data = await res.json();
+	let url = data.url;
+	if (!url.startsWith('http')) {
+		url = `https://cataas.com${url}`;
 	}
-	return cats;
+	return url;
+}
+
+async function fetchRemainingCats(count) {
+	const promises = Array.from({ length: count }, () => fetchCat());
+	const moreCats = await Promise.all(promises);
+	cats.push(...moreCats);
 }
 
 init();
