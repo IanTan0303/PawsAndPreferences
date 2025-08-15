@@ -14,8 +14,9 @@ h1 {
 
 #card-stack {
 	position: relative;
-	width: 300px;
-	height: 400px;
+	width: 90vw;
+	max-width: 400px;
+	aspect-ratio: 3 / 4;
 	margin-top: 20px;
 }
 
@@ -30,6 +31,7 @@ h1 {
 	box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 	transition: transform 0.3s ease, opacity 0.3s ease;
 	touch-action: none;
+	opacity: 0;
 }
 
 .hidden {
@@ -39,4 +41,33 @@ h1 {
 #liked-cats img {
   	margin: 5px;
   	border-radius: 10px;
+}
+
+.loader {
+	border: 8px solid #f3f3f3;
+	border-top: 8px solid #ff4081;
+	border-radius: 50%;
+	width: 50px;
+	height: 50px;
+	animation: spin 1s linear infinite;
+	margin-top: 50px;
+}
+
+.card-loader {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	border: 6px solid #f3f3f3;
+	border-top: 6px solid #ff4081;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	animation: spin 1s linear infinite;
+	z-index: 10;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }
